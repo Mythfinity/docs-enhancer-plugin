@@ -1,0 +1,13 @@
+{
+  "name": "docs-enhancer",
+  "version": "0.2.0",
+  "description": "Audit a project's CLAUDE.md and its linked docs for documentation hygiene — oversized or stale changelog-style files, and index drift. Includes a session-start check that flags an overdue changelog, and a verified split into current + archive.",
+  "author": {
+    "name": "Milen Grigorov",
+    "url": "https://github.com/Mythfinity"
+  },
+  "homepage": "https://github.com/Mythfinity/docs-enhancer-plugin",
+  "repository": "https://github.com/Mythfinity/docs-enhancer-plugin",
+  "license": "MIT",
+  "keywords": ["documentation", "changelog", "CLAUDE.md", "hygiene", "archive"]
+}

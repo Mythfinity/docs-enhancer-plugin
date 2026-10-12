@@ -1,0 +1,16 @@
+{
+  "name": "docs-enhancer",
+  "owner": {
+    "name": "Milen Grigorov"
+  },
+  "metadata": {
+    "description": "Keep CLAUDE.md-linked changelogs from growing forever: a session-start check plus a skill that splits an overdue changelog into a current window and a dated archive, verifying nothing is lost."
+  },
+  "plugins": [
+    {
+      "name": "docs-enhancer",
+      "source": "./",
+      "description": "Audit CLAUDE.md and its linked docs for documentation hygiene — oversized or stale changelog-style files, and index drift."
+    }
+  ]
+}

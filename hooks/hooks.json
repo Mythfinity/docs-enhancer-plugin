@@ -1,0 +1,16 @@
+{
+  "description": "At session start, flag changelog-style docs that have outgrown their retention window. Silent when everything is fine.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/check-docs.sh\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
