@@ -33,6 +33,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
@@ -440,6 +441,11 @@ def render(pl: Plan) -> Rendered:
     """Build the two files' new contents from a plan, and prove the plan loses nothing."""
     if not pl.actionable:
         raise SplitError('nothing to split')
+    for p in (pl.path, pl.archive_path):
+        if p.is_symlink():
+            # Writing would replace the link, and an archive link could pull a
+            # file from outside the project into it. Not worth guessing at.
+            raise SplitError(f'{p} is a symlink; refusing to split through it')
     original = read_lines(pl.path)
     original_text = ''.join(original)
     if pl.added_final_newline:
@@ -481,10 +487,22 @@ def render(pl: Plan) -> Rendered:
 
 
 def _atomic_write(path: Path, text: str):
-    tmp = path.with_name(path.name + '.tmp')
-    with open(tmp, 'w', encoding='utf-8', newline='') as f:
-        f.write(text)
-    os.replace(tmp, path)
+    """Write via a fresh temp file in the same directory, then rename over the target.
+
+    mkstemp creates the temp file with O_EXCL under a random name, so a symlink
+    planted at a predictable "<name>.tmp" can never redirect the write.
+    """
+    fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=f'.{path.name}.', suffix='.tmp')
+    try:
+        with os.fdopen(fd, 'w', encoding='utf-8', newline='') as f:
+            f.write(text)
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 def verify_written(pl: Plan, out: Rendered):

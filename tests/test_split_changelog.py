@@ -445,6 +445,32 @@ class ApplySplit(TempDirCase):
         with self.assertRaises(sc.SplitError):
             sc.render(pl)
 
+    def test_refuses_to_split_a_symlinked_changelog(self):
+        target = self.write('elsewhere/real.md', NEWEST_FIRST)
+        link = self.dir / 'log.md'
+        link.symlink_to(target)
+        with self.assertRaises(sc.SplitError):
+            sc.apply(link, today=TODAY)
+        self.assertEqual(target.read_text(encoding='utf-8'), NEWEST_FIRST)
+        self.assertTrue(link.is_symlink())
+
+    def test_refuses_a_symlinked_archive(self):
+        secret = self.write('elsewhere/secret.md', 'SECRET\n')
+        (self.dir / 'log-archive.md').symlink_to(secret)
+        p = self.write('log.md', NEWEST_FIRST)
+        with self.assertRaises(sc.SplitError):
+            sc.apply(p, today=TODAY)
+        self.assertEqual(secret.read_text(encoding='utf-8'), 'SECRET\n')
+        self.assertEqual(p.read_text(encoding='utf-8'), NEWEST_FIRST)
+
+    def test_write_does_not_follow_a_planted_tmp_symlink(self):
+        victim = self.write('elsewhere/victim.txt', 'untouched\n')
+        (self.dir / 'log.md.tmp').symlink_to(victim)
+        (self.dir / 'log-archive.md.tmp').symlink_to(victim)
+        p, res = self.apply(NEWEST_FIRST)
+        self.assertTrue(res.verified)
+        self.assertEqual(victim.read_text(encoding='utf-8'), 'untouched\n')
+
 
 # --- scan ------------------------------------------------------------------
 
